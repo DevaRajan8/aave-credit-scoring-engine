@@ -119,10 +119,3 @@ The system is designed for easy extension:
 - Scalable to large datasets
 - Provides interpretable results with feature importance
 
-## Future Enhancements
-
-1. **Time-series analysis**: Temporal behavior patterns
-2. **Cross-protocol analysis**: Multi-protocol user behavior
-3. **Social network effects**: Wallet interaction patterns
-4. **Dynamic scoring**: Real-time score updates
-5. **Ensemble methods**: Multiple model combination
