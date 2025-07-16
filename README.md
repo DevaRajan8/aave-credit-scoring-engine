@@ -1,134 +1,121 @@
-# Aave V2 Credit Scoring Analysis
+# Aave V2 Credit Scoring System
 
-## Executive Summary
+## Overview
 
-This analysis presents the results of credit scoring for Aave V2 protocol wallets based on their transaction behavior. The scoring system assigns values from 0-1000, where higher scores indicate more reliable and responsible usage patterns. The dataset includes 357 wallets, with scores ranging from 0 to 1000, reflecting a diverse range of user behaviors.
+This system assigns credit scores (0-1000) to Aave V2 protocol wallets based on their historical transaction behavior. The model identifies reliable, responsible users versus risky, bot-like, or exploitative behavior patterns.
 
-## Dataset Overview
+## Architecture
 
-- **Total Wallets Analyzed**: 357
-- **Total Transactions**: 10000
-- **Average Credit Score**: 682.34
+### Core Components
 
-The dataset contains only wallet addresses and credit scores, limiting the ability to analyze transaction-specific metrics directly. Behavioral insights are inferred from score ranges.
+1. **Data Preprocessing**: Normalizes transaction amounts, handles different token decimals, calculates USD values
+2. **Feature Engineering**: Extracts 20+ behavioral features per wallet
+3. **Credit Scoring**: Hybrid approach combining rule-based (40%) and ML-based (60%) scoring
+4. **Analysis & Visualization**: Comprehensive score distribution analysis and behavioral insights
 
-## Score Distribution Analysis
+### Processing Flow
 
-### Overall Distribution
+```
+Raw JSON Data → Data Preprocessing → Feature Engineering → Credit Scoring → Analysis & Output
+```
 
-The histogram of credit scores shows a right-skewed distribution, with a significant concentration of wallets scoring above 700, indicating a generally reliable user base. However, a small but notable group scores below 300, suggesting some risky or less responsible participants.
+## Features Engineered
 
-*Note: A detailed histogram would be generated programmatically from the full dataset.*
+### Transaction Metrics
+- **Total transactions**: Volume of activity
+- **Unique assets**: Diversification indicator
+- **Total volume USD**: Financial scale
+- **Average/median transaction size**: Typical behavior patterns
+- **Activity duration**: Time span of engagement
 
-### Score Range Breakdown
+### Behavioral Patterns
+- **Action ratios**: Deposit, borrow, repay, redeem, liquidation proportions
+- **Transaction regularity**: Consistency of timing patterns
+- **Volume consistency**: Stability of transaction amounts
+- **Borrow-repay ratio**: Debt management behavior
+- **Bot score**: Automated behavior detection
 
-| Score Range | Wallet Count | Percentage | Interpretation |
-|-------------|--------------|------------|----------------|
-| 0-100       | 3           | 0.84%      | Very Poor - High risk |
-| 100-200     | 3           | 0.84%      | Poor - Risky behavior |
-| 200-300     | 6           | 1.68%      | Below Average |
-| 300-400     | 8           | 2.24%      | Average - Typical users |
-| 400-500     | 50          | 14.01%     | Average+ |
-| 500-600     | 0           | 0.00%      | Good - Responsible users |
-| 600-700     | 0           | 0.00%      | Very Good |
-| 700-800     | 91          | 25.49%     | Excellent |
-| 800-900     | 95          | 26.61%     | Outstanding |
-| 900-1000    | 101         | 28.29%     | Perfect - Highly reliable |
+### Risk Indicators
+- **Liquidation count/ratio**: Direct risk measure
+- **Has liquidations**: Binary risk flag
+- **Transaction frequency**: Potential manipulation detection
 
-**Key Finding**: The majority of wallets (80.39%) score above 700, with 28.29% achieving near-perfect scores (900-1000). Only 3.36% fall below 300, highlighting a small high-risk segment.
+## Scoring Methodology
 
-## Behavioral Analysis
+### Rule-Based Component (40% weight)
+- **Base score**: 500 points
+- **Positive factors**: High volume, long activity, good repayment, deposits, diversification
+- **Negative factors**: Liquidations, bot behavior, irregular patterns
 
-### Low Score Wallets (0-300)
+### ML Component (60% weight)
+- **Model**: Random Forest Regressor
+- **Training**: Synthetic target based on risk/reward factors
+- **Features**: All engineered features with automatic importance weighting
 
-**Characteristics:**
-- Likely high liquidation rates (data unavailable)
-- Possible bot-like behavior with repetitive, small transactions
-- Irregular transaction patterns
-- Low borrow-repay ratios (data unavailable)
-- Short activity periods (data unavailable)
+### Final Score Calculation
+```python
+final_score = 0.4 * rule_score + 0.6 * ml_score
+scaled_score = normalize_to_0_1000(final_score)
+```
 
-**Common Patterns:**
-- Frequent small transactions at regular intervals
-- High liquidation-to-transaction ratios
-- Limited asset diversification
-- Poor debt management
+## Usage Instructions
 
-With only 12 wallets (3.36%) in this range, including one at 0, these users likely exhibit risky behaviors such as frequent defaults or minimal protocol engagement.
+### For Google Colab:
+1. Upload the JSON file when prompted
+2. Run the complete script
+3. View analysis plots and statistics
 
-### Medium Score Wallets (300-700)
+### For Local Environment:
+1. Update `file_path` variable with your JSON file location
+2. Install required dependencies: `pandas`, `numpy`, `scikit-learn`, `matplotlib`, `seaborn`
+3. Run the script
 
-**Characteristics:**
-- Moderate transaction volumes (data unavailable)
-- Occasional liquidations but better recovery
-- More diverse asset usage
-- Inconsistent but improving repayment patterns
+## Model Validation
 
-**Common Patterns:**
-- Mix of deposits and borrowing
-- Some asset diversification
-- Moderate activity duration
-- Learning curve behavior
+### Score Distribution Analysis
+- Histogram of credit scores across all wallets
+- Breakdown by score ranges (0-100, 100-200, etc.)
+- Feature importance ranking
 
-This range includes 58 wallets (16.25%), with a notable cluster around 400-500 (14.01%). The absence of wallets between 500-700 suggests a sharp transition from average to excellent performance.
+### Behavioral Insights
+- **Low Score Wallets (< 300)**: High liquidation rates, bot-like behavior, irregular patterns
+- **High Score Wallets (> 700)**: Consistent activity, good repayment history, diverse asset usage
 
-### High Score Wallets (700-1000)
+## Key Assumptions
 
-**Characteristics:**
-- Large transaction volumes: Average not computable
-- Long activity periods: Not computable
-- Excellent borrow-repay ratios: Not computable
-- High asset diversification: Not computable
-- Minimal liquidations: Not computable
+1. **Liquidations are negative**: Indicates poor risk management
+2. **Regular repayments are positive**: Shows responsible borrowing
+3. **Diverse asset usage is positive**: Indicates sophisticated users
+4. **Bot-like behavior is negative**: Suggests potential manipulation
+5. **Volume and duration matter**: Larger, longer-term users are more reliable
 
-**Common Patterns:**
-- Consistent large deposits
-- Sophisticated borrowing strategies
-- Quick repayment behavior
-- Multi-asset portfolio management
-- Long-term protocol engagement
+## Extensibility
 
-With 287 wallets (80.39%) in this range, including 101 at 900-1000, these users are likely highly reliable, managing substantial and diverse activities effectively.
+The system is designed for easy extension:
 
-## Feature Importance Analysis
+- **New features**: Add to `_calculate_wallet_features()` method
+- **Different scoring weights**: Modify rule-based scoring parameters
+- **Alternative ML models**: Replace RandomForestRegressor in `_calculate_ml_scores()`
+- **Custom risk factors**: Update synthetic target creation logic
 
-**Top 10 Most Important Features**: Not available, as the dataset lacks underlying transaction features or a model output. Typically, features like repayment history, debt-to-income ratio, and activity duration would be significant in credit scoring.
+## Output
 
-## Risk Assessment
+1. **CSV file**: `wallet_credit_scores.csv` with wallet addresses and scores
+2. **Visualizations**: Score distribution, feature importance, behavioral analysis
+3. **Statistics**: Comprehensive analysis of scoring patterns
 
-### Liquidation Impact
-- **Wallets with liquidations**: Not computable
-- **Average score with liquidations**: Not computable
-- **Average score without liquidations**: Not computable
-- **Score impact of liquidations**: Not computable
+## Score Interpretation
 
-Lower scores (e.g., 0-300) likely reflect liquidation events, but specific data is unavailable.
+- **800-1000**: Excellent - Highly reliable, sophisticated users
+- **600-799**: Good - Responsible users with minor risks
+- **400-599**: Average - Typical DeFi users
+- **200-399**: Poor - Risky behavior patterns
+- **0-199**: Very Poor - High risk, potential bots/exploiters
 
-### Bot Detection Results
-- **Suspected bot wallets**: Not computable
-- **Average bot score**: Not computable
-- **Score impact of bot behavior**: Not computable
+## Technical Notes
 
-Bot-like behavior may contribute to lower scores, but confirmation requires transaction pattern data.
+- Handles different token decimals (USDC: 6, ETH: 18, etc.)
+- Robust to missing data and edge cases
+- Scalable to large datasets
+- Provides interpretable results with feature importance
 
-## Key Insights
-
-### Volume vs. Score Correlation
-Likely positive correlation inferred from high scores (700-1000) dominating the dataset, suggesting active users score better. Exact threshold unavailable.
-
-### Time-Based Patterns
-High scores (e.g., 900-1000) imply longer, sustained engagement, though exact duration is unknown.
-
-### Asset Diversification Impact
-High-scoring wallets likely use diverse assets, while low scores may indicate single-asset reliance. Data unavailable for confirmation.
-
-### Borrowing Behavior
-Excellent scores (700-1000) suggest healthy borrow-repay ratios, though exact ratios are not computable.
-
-## Conclusion
-
-The Aave V2 wallet credit scores reveal a predominantly reliable user base, with over 80% scoring above 700. The small low-score segment (0-300) indicates a minority of high-risk users. Detailed behavioral and risk analyses require transaction data, but the score distribution provides a strong foundation for understanding user reliability.
-
----
-
-*Analysis based on 357 Aave V2 protocol wallets with credit scores ranging from 0-1000.*
